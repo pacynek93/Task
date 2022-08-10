@@ -3,38 +3,55 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const Products = () => {
-  const [userData, setUserData] = useState([]);
-  const [counter, setCounter] = useState(0);
-  const [isVisible, setIsVisible] = useState("visible");
+  const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    current: 0,
+    brandName: [],
+  });
 
-  const checkIfLast = () => {
-    let lastNumber = userData[Object.keys(userData).pop()];
-    if (counter > lastNumber.id) {
-      setIsVisible("hidden");
-    }
+  const getTotalProducts = () => {
+    axios.get(`http://localhost:3000/products`).then((res) => {
+      setAllProducts(res.data);
+      setPagination((prevState) => {
+        return {
+          ...prevState,
+          total: res.data.length,
+        };
+      });
+    });
   };
 
-  const getUserData = () => {
+  const getProducts = () => {
     axios
-      .get(`http://localhost:3000/products?_start=0&_end=${counter + 5}`)
+      .get(
+        `http://localhost:3000/products?_start=0&_end=${pagination.current + 5}`
+      )
       .then((res) => {
-        setUserData(res.data);
-        setCounter(counter + 5);
-        checkIfLast();
+        setProducts(res.data);
+        setPagination((prevState) => {
+          return {
+            ...prevState,
+            current: prevState.current + 5,
+          };
+        });
       });
   };
 
   useEffect(() => {
-    getUserData();
+    getTotalProducts();
+    getProducts();
+    BrandDropdown();
   }, []);
 
-  const mapUserData = () =>
-    userData.map((item) => (
-      <div className="singleItem" key={item.id}>
-        <div className="leftCol">
-          <img alt={`img`} key={item.id} src={item.thumbnail} />
+  const mapProducts = () =>
+    products.map((item) => (
+      <div className="single-item" key={item.id}>
+        <div className="left-col">
+          <img alt={`img`} key={item.img} src={item.thumbnail} />
         </div>
-        <div className="rightCol">
+        <div className="right-col">
           <ul>
             <li>{item.id}</li>
             <li>{item.title}</li>
@@ -49,13 +66,32 @@ const Products = () => {
       </div>
     ));
 
+  const BrandDropdown = () => {
+    return (
+      <div className="brand-dropdown">
+        <div className="control">
+          <div className="selected-brand">Select brand...</div>
+          <div className="arrow" />
+        </div>
+        <div className="brand-options">
+          {allProducts.map((item) => (
+            <div className="brand-option" key={item.id}>
+              {item.brand}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <>
-      {mapUserData()}
-      <button onClick={getUserData} style={{ visibility: isVisible }}>
-        load more
-      </button>
-    </>
+    <div>
+      {BrandDropdown()}
+      <div className="products-section">{mapProducts()}</div>
+      {pagination.total - 5 >= pagination.current ? (
+        <button onClick={getProducts}>load more</button>
+      ) : null}
+    </div>
   );
 };
 
