@@ -21,8 +21,6 @@ const Products = () => {
   useEffect(() => {
     getTotalProducts();
     BrandDropdown();
-    console.log(productCount);
-    console.log(allProducts.length);
   }, []);
 
   useEffect(() => {
