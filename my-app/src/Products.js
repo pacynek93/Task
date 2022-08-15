@@ -21,6 +21,8 @@ const Products = () => {
   useEffect(() => {
     getTotalProducts();
     BrandDropdown();
+    console.log(productCount);
+    console.log(allProducts.length);
   }, []);
 
   useEffect(() => {
@@ -119,9 +121,11 @@ const Products = () => {
     <div>
       {BrandDropdown()}
       <div className="products-section">{mapProducts()}</div>
-      <button onClick={() => setProductCount(productCount + 5)}>
-        load more
-      </button>
+      {productCount + 5 <= allProducts.length ? (
+        <button onClick={() => setProductCount(productCount + 5)}>
+          load more
+        </button>
+      ) : null}
     </div>
   );
 };
