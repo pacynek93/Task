@@ -10,6 +10,11 @@ const Products = () => {
     current: 0,
     brandName: [],
   });
+  const [productFilter, setProductFilter] = useState({
+    brand: "all",
+    category: "all",
+  });
+  //const [visibleProducts, setvisibleProducts] = useState(ture);
 
   const getTotalProducts = () => {
     axios.get(`http://localhost:3000/products`).then((res) => {
@@ -45,6 +50,19 @@ const Products = () => {
     BrandDropdown();
   }, []);
 
+  useEffect(() => {
+    console.log(productFilter);
+    setProducts(
+      products.filter(
+        (product) =>
+          (productFilter.brand === "all" ||
+            productFilter.brand === product.brand) &&
+          (productFilter.category === "all" ||
+            productFilter.category === product.category)
+      )
+    );
+  }, [productFilter]);
+
   const mapProducts = () =>
     products.map((item) => (
       <div className="single-item" key={item.id}>
@@ -68,19 +86,62 @@ const Products = () => {
 
   const BrandDropdown = () => {
     return (
-      <div className="brand-dropdown">
-        <div className="control">
-          <div className="selected-brand">Select brand...</div>
-          <div className="arrow" />
+      <>
+        <div className="brand-dropdown">
+          <div className="control">
+            <div className="selected-brand">Select brand...</div>
+            <div className="arrow" />
+          </div>
+          <div className="brand-options">
+            <select
+              onChange={(e) =>
+                setProductFilter({
+                  brand: e.target.value,
+                  category: productFilter.category,
+                })
+              }
+            >
+              <option value={"all"}>All Brands</option>
+              {[...new Set(allProducts.map((item) => item.brand))].map(
+                (brand) => (
+                  <option value={brand} className="brand-option" key={brand}>
+                    {brand}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
         </div>
-        <div className="brand-options">
-          {allProducts.map((item) => (
-            <div className="brand-option" key={item.id}>
-              {item.brand}
-            </div>
-          ))}
+        <div className="category-dropdown">
+          <div className="control">
+            <div className="selected-category">Select category...</div>
+            <div className="arrow" />
+          </div>
+          <div className="category-options">
+            <select
+              onChange={(e) =>
+                setProductFilter({
+                  category: e.target.value,
+                  brand: productFilter.brand,
+                })
+              }
+            >
+              <option value={"all"}>All Categories</option>
+              {[...new Set(allProducts.map((item) => item.category))].map(
+                (category) => (
+                  <option
+                    value={category}
+                    className="category-option"
+                    key={category}
+                  >
+                    {category}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
         </div>
-      </div>
+      </>
     );
   };
 
