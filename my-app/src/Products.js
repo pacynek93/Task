@@ -3,57 +3,29 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const Products = () => {
-  const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    current: 0,
-    brandName: [],
-  });
   const [productFilter, setProductFilter] = useState({
     brand: "all",
     category: "all",
   });
-  //const [visibleProducts, setvisibleProducts] = useState(ture);
+  const [visibleProducts, setvisibleProducts] = useState([]);
+  const [productCount, setProductCount] = useState(5);
 
   const getTotalProducts = () => {
     axios.get(`http://localhost:3000/products`).then((res) => {
       setAllProducts(res.data);
-      setPagination((prevState) => {
-        return {
-          ...prevState,
-          total: res.data.length,
-        };
-      });
+      setvisibleProducts(res.data);
     });
-  };
-
-  const getProducts = () => {
-    axios
-      .get(
-        `http://localhost:3000/products?_start=0&_end=${pagination.current + 5}`
-      )
-      .then((res) => {
-        setProducts(res.data);
-        setPagination((prevState) => {
-          return {
-            ...prevState,
-            current: prevState.current + 5,
-          };
-        });
-      });
   };
 
   useEffect(() => {
     getTotalProducts();
-    getProducts();
     BrandDropdown();
   }, []);
 
   useEffect(() => {
-    console.log(productFilter);
-    setProducts(
-      products.filter(
+    setvisibleProducts(
+      allProducts.filter(
         (product) =>
           (productFilter.brand === "all" ||
             productFilter.brand === product.brand) &&
@@ -64,7 +36,7 @@ const Products = () => {
   }, [productFilter]);
 
   const mapProducts = () =>
-    products.map((item) => (
+    visibleProducts.slice(0, productCount).map((item) => (
       <div className="single-item" key={item.id}>
         <div className="left-col">
           <img alt={`img`} key={item.img} src={item.thumbnail} />
@@ -86,11 +58,10 @@ const Products = () => {
 
   const BrandDropdown = () => {
     return (
-      <>
+      <div className="filter-section">
         <div className="brand-dropdown">
           <div className="control">
             <div className="selected-brand">Select brand...</div>
-            <div className="arrow" />
           </div>
           <div className="brand-options">
             <select
@@ -115,7 +86,6 @@ const Products = () => {
         <div className="category-dropdown">
           <div className="control">
             <div className="selected-category">Select category...</div>
-            <div className="arrow" />
           </div>
           <div className="category-options">
             <select
@@ -141,7 +111,7 @@ const Products = () => {
             </select>
           </div>
         </div>
-      </>
+      </div>
     );
   };
 
@@ -149,9 +119,9 @@ const Products = () => {
     <div>
       {BrandDropdown()}
       <div className="products-section">{mapProducts()}</div>
-      {pagination.total - 5 >= pagination.current ? (
-        <button onClick={getProducts}>load more</button>
-      ) : null}
+      <button onClick={() => setProductCount(productCount + 5)}>
+        load more
+      </button>
     </div>
   );
 };
